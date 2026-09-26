@@ -140,7 +140,12 @@ async function main() {
   ];
 
   for (const fac of facilitiesData) {
-    await prisma.hospitalFacility.create({ data: fac });
+    const existingFac = await prisma.hospitalFacility.findFirst({
+      where: { hospitalId: fac.hospitalId, facilityName: fac.facilityName },
+    });
+    if (!existingFac) {
+      await prisma.hospitalFacility.create({ data: fac });
+    }
   }
 
   // 3. Ambulances & Drivers
@@ -325,25 +330,30 @@ async function main() {
   });
 
   // Sample Historical Emergency Request
-  await prisma.emergencyRequest.create({
-    data: {
-      patientId: patient1.id,
-      hospitalId: hospital1.id,
-      status: 'COMPLETED',
-      emergencyType: 'CARDIAC',
-      severity: 'CRITICAL',
-      pickupLatitude: 13.0512,
-      pickupLongitude: 80.2562,
-      pickupAddress: '45 Cathedral Road, Gopalapuram, Chennai, TN',
-      destinationLatitude: 13.0604,
-      destinationLongitude: 80.2496,
-      destinationAddress: hospital1.address,
-      notes: 'Patient reported sharp chest pain radiating to left arm.',
-      requestedAt: new Date(Date.now() - 86400000), // 1 day ago
-      acceptedAt: new Date(Date.now() - 86100000),
-      completedAt: new Date(Date.now() - 84000000),
-    },
+  const existingReq = await prisma.emergencyRequest.findFirst({
+    where: { patientId: patient1.id, status: 'COMPLETED' },
   });
+  if (!existingReq) {
+    await prisma.emergencyRequest.create({
+      data: {
+        patientId: patient1.id,
+        hospitalId: hospital1.id,
+        status: 'COMPLETED',
+        emergencyType: 'CARDIAC',
+        severity: 'CRITICAL',
+        pickupLatitude: 13.0512,
+        pickupLongitude: 80.2562,
+        pickupAddress: '45 Cathedral Road, Gopalapuram, Chennai, TN',
+        destinationLatitude: 13.0604,
+        destinationLongitude: 80.2496,
+        destinationAddress: hospital1.address,
+        notes: 'Patient reported sharp chest pain radiating to left arm.',
+        requestedAt: new Date(Date.now() - 86400000), // 1 day ago
+        acceptedAt: new Date(Date.now() - 86100000),
+        completedAt: new Date(Date.now() - 84000000),
+      },
+    });
+  }
 
   console.log('✅ Seeding completed successfully!');
 }

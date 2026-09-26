@@ -10,8 +10,11 @@ export const SocketProvider = ({ children }) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Socket connection URL (proxy or direct)
-    const newSocket = io('http://localhost:5000', {
+    // Socket connection URL (dynamic for production deployment or dev)
+    const socketServerUrl = import.meta.env.VITE_SOCKET_URL ||
+      (window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin);
+
+    const newSocket = io(socketServerUrl, {
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
     });

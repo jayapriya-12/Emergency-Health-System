@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "prisma generate && prisma db push && node prisma/seed.js",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "db:push": "prisma db push",
